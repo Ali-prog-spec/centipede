@@ -72,8 +72,12 @@ app.post('/api/auth/signup', async (req, res) => {
   if (username.trim().length > 20) {
     return err(res, 'Username must be 20 characters or fewer');
   }
-  if (!password || password.length < 4) {
-    return err(res, 'Password must be at least 4 characters');
+  if (!password || password.length < 8) {
+    return err(res, 'Password must be at least 8 characters');
+  }
+  const passRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+  if (!passRegex.test(password)) {
+    return err(res, 'Password must contain at least one letter, one number, and one special character');
   }
 
   try {
@@ -111,6 +115,38 @@ app.post('/api/auth/verify', authMiddleware, async (req, res) => {
     ok(res, player);
   } catch (error) {
     err(res, error.message, 500);
+  }
+});
+
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const { username } = req.body;
+  if (!username) return err(res, 'Username required');
+  try {
+    const token = await repo.createResetToken(username);
+    // In a real app, send this via email. We return it here for testing.
+    ok(res, { message: 'Reset token generated', token });
+  } catch (error) {
+    err(res, error.message, 400);
+  }
+});
+
+app.post('/api/auth/reset-password', async (req, res) => {
+  const { token, newPassword } = req.body;
+  if (!token || !newPassword) return err(res, 'Token and new password required');
+  
+  if (newPassword.length < 8) {
+    return err(res, 'Password must be at least 8 characters');
+  }
+  const passRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+  if (!passRegex.test(newPassword)) {
+    return err(res, 'Password must contain at least one letter, one number, and one special character');
+  }
+
+  try {
+    const player = await repo.resetPassword(token, newPassword);
+    ok(res, { message: 'Password reset successfully', player });
+  } catch (error) {
+    err(res, error.message, 400);
   }
 });
 
