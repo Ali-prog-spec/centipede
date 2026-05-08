@@ -58,6 +58,28 @@ const AuthService = (() => {
     return data.data;
   }
 
+  async function requestResetToken(username) {
+    const res = await fetch(`${API_BASE}/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    return data.data;
+  }
+
+  async function resetPassword(token, newPassword) {
+    const res = await fetch(`${API_BASE}/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, newPassword }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    return data.data;
+  }
+
   async function verify() {
     const token = getToken();
     if (!token) return null;
@@ -89,6 +111,8 @@ const AuthService = (() => {
     signup,
     login,
     verify,
+    requestResetToken,
+    resetPassword,
     getUser,
     getToken,
     isAuthenticated,
@@ -108,6 +132,8 @@ const AuthUI = (() => {
     tabBtns.forEach((btn) => btn.addEventListener('click', switchTab));
     document.getElementById('loginBtn').addEventListener('click', handleLogin);
     document.getElementById('signupBtn').addEventListener('click', handleSignup);
+    document.getElementById('forgotBtn').addEventListener('click', handleForgot);
+    document.getElementById('resetBtn').addEventListener('click', handleReset);
     checkAuthentication();
   }
 
@@ -117,6 +143,8 @@ const AuthUI = (() => {
     event.target.classList.add('active');
     document.getElementById('login-form').classList.remove('active');
     document.getElementById('signup-form').classList.remove('active');
+    document.getElementById('forgot-form').classList.remove('active');
+    document.getElementById('reset-form').classList.remove('active');
     document.getElementById(`${tab}-form`).classList.add('active');
     clearMessages();
   }
@@ -164,8 +192,14 @@ const AuthUI = (() => {
       return;
     }
 
-    if (password.length < 4) {
-      showError('Password must be at least 4 characters');
+    if (password.length < 8) {
+      showError('Password must be at least 8 characters');
+      return;
+    }
+
+    const passRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    if (!passRegex.test(password)) {
+      showError('Password must contain at least one letter, one number, and one special character (e.g. @, !, #)');
       return;
     }
 
@@ -176,6 +210,57 @@ const AuthUI = (() => {
       redirectForRole(result.player.role);
     } catch (error) {
       showError(error.message || 'Signup failed');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleForgot(event) {
+    event.preventDefault();
+    clearMessages();
+    const username = document.getElementById('forgot-username').value.trim();
+    if (!username) return showError('Username required');
+
+    try {
+      setLoading(true);
+      const res = await AuthService.requestResetToken(username);
+      showSuccess(`Simulated Email: Your reset token is: ${res.token}`);
+      document.getElementById('reset-token').value = res.token;
+      // Switch to reset tab automatically
+      document.querySelector('[data-tab="forgot"]').classList.remove('active');
+      document.getElementById('forgot-form').classList.remove('active');
+      document.getElementById('reset-form').classList.add('active');
+    } catch (error) {
+      showError(error.message || 'Failed to request token');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleReset(event) {
+    event.preventDefault();
+    clearMessages();
+    const token = document.getElementById('reset-token').value.trim();
+    const newPassword = document.getElementById('reset-password').value;
+
+    if (!token || !newPassword) return showError('Token and new password required');
+
+    if (newPassword.length < 8) {
+      return showError('Password must be at least 8 characters');
+    }
+    const passRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    if (!passRegex.test(newPassword)) {
+      return showError('Password must contain at least one letter, one number, and one special character');
+    }
+
+    try {
+      setLoading(true);
+      await AuthService.resetPassword(token, newPassword);
+      showSuccess('Password reset successfully! You can now login.');
+      document.getElementById('reset-form').classList.remove('active');
+      document.querySelector('[data-tab="login"]').click();
+    } catch (error) {
+      showError(error.message || 'Password reset failed');
     } finally {
       setLoading(false);
     }
@@ -222,8 +307,7 @@ const AuthUI = (() => {
 
   function setLoading(loading) {
     form.classList.toggle('loading', loading);
-    document.getElementById('loginBtn').disabled = loading;
-    document.getElementById('signupBtn').disabled = loading;
+    document.querySelectorAll('.submit-btn').forEach(btn => btn.disabled = loading);
   }
 
   return { init };
