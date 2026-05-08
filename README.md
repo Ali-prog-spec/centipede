@@ -1,127 +1,124 @@
-# 🐛 Centipede — Arcade Web Edition
+# 🐛 Centipede Arcade: Web Application Report
 
-A full-stack web conversion of the classic SFML/C++ Centipede game.
-
-## Stack
-
-| Layer       | Technology                         |
-|-------------|-------------------------------------|
-| Frontend    | HTML5 Canvas, Vanilla JS, CSS3      |
-| Backend     | Node.js + Express                  |
-| Database    | SQLite 3 via `better-sqlite3`       |
+Welcome to the comprehensive documentation for **Centipede Arcade**, a full-stack web application that brings a classic arcade shooter into the modern browser. This project combines a fully functional HTML5 Canvas game engine with a robust backend featuring secure authentication, a token-based economy, and an administrative dashboard.
 
 ---
 
-## Project Structure
+## 1. Project Overview
 
-```
-centipede-web/
-├── db/
-│   ├── schema.js        ← Run once to create tables + seed achievements
-│   └── repository.js    ← All SQL queries (data access layer)
+The objective of this project was to develop an engaging web-based arcade game backed by a secure, database-driven backend. Players can register, log in, earn tokens, unlock skins, and compete on global leaderboards. Administrators have access to a dedicated dashboard where they can manage users, assign tokens, and oversee all platform activity.
+
+---
+
+## 2. Technology Stack
+
+This application is built from the ground up without relying on heavy frontend frameworks (like React or Vue), ensuring blazing-fast load times and total control over the DOM. 
+
+*   **Frontend:** Vanilla HTML5, CSS3, JavaScript (ES6+), HTML5 Canvas API
+*   **Backend:** Node.js, Express.js
+*   **Database:** MongoDB, Mongoose ODM
+*   **Security & Auth:** JSON Web Tokens (JWT), bcryptjs (Password Hashing), native Crypto API
+
+---
+
+## 3. Core Features Implemented
+
+### 3.1. Secure Authentication & Data Integrity
+*   **End-to-End Auth:** Fully functional Signup and Login system using JWT for stateless session management.
+*   **Strict Password Policies:** Passwords must be at least 8 characters long, containing at least one letter, one number, and one special character. Validated on both the frontend and backend.
+*   **Password Encryption:** All passwords are mathematically hashed using `bcryptjs` before being saved to the database. Plain text passwords are never logged or stored.
+*   **Password Reset Flow:** Includes a secure "Forgot Password" flow that utilizes temporary, time-limited cryptographic tokens (15-minute expiry).
+*   **Inactivity Timeout:** A background process monitors user activity (mouse, keyboard, scroll). If a user is completely idle for 15 minutes, their session is aggressively cleared and they are redirected to the login page.
+
+### 3.2. Role-Based Access Control (RBAC)
+The system differentiates between two primary roles: `player` and `admin`.
+*   **Backend Guards:** API endpoints are protected by `authMiddleware` (validates JWT) and `adminMiddleware` / `playerMiddleware` (validates role access).
+*   **Admin Dashboard:** Administrators are routed to a separate UI (`admin.html`) where they can view all registered players, manually grant/revoke tokens, deactivate bad actors, and promote/demote user roles.
+
+### 3.3. Game Engine Mechanics
+*   **Canvas Rendering:** The game runs entirely on a 640x640 HTML5 Canvas element using `requestAnimationFrame` for a smooth 60FPS loop.
+*   **Responsive Canvas:** The canvas utilizes CSS aspect-ratio logic to perfectly scale down for mobile devices without distortion or horizontal scrollbars.
+*   **Dynamic Entities:** Includes animated player movement, shooting mechanics, mushroom generation, and a dynamically splitting centipede. The centipede features procedurally animated legs that sync with its movement speed!
+
+### 3.4. Economy & Progression
+*   **Token System:** Players require 1 Token to start a run. If they run out, they can request more via the UI, which an Admin can approve or deny.
+*   **Leaderboards:** Tracks All-Time High Scores, Recent Games, and Daily Challenges.
+*   **Store & Skins:** Players can spend earned tokens to purchase custom ship skins. These skins dynamically alter the colors rendered inside the Canvas engine.
+*   **Achievements:** Over 100+ unlockable achievements are tracked and awarded automatically during gameplay (stored in `gameData.js` and synced to MongoDB on boot).
+
+### 3.5. UI/UX & Aesthetics
+*   **Retro Aesthetic:** Uses a unified dark-mode color palette (`--surface`, `--green`, `--amber`) and "Press Start 2P" pixel fonts.
+*   **Live Background:** A custom JavaScript particle system generates a "Green Glowy Ashes" effect that floats behind the main interface.
+*   **Single Page Application (SPA) Feel:** The main player dashboard uses inline tab switching to prevent jarring page reloads, keeping the user immersed.
+*   **Global Footer:** Every page includes a unified footer with support/contact links (integrated with WhatsApp) and an About section.
+
+---
+
+## 4. Code Architecture & Structure
+
+```text
+/
 ├── server/
-│   └── index.js         ← Express REST API server
+│   └── index.js           # Express API router, middlewares, and server entry point
+├── db/
+│   ├── schema.js          # Mongoose Models (Player, Score, DailyChallenge, etc.)
+│   ├── repository.js      # Core business logic, DB queries, Auth/Hash wrappers
+│   └── gameData.js        # Static configuration (Skins, Achievements)
 ├── public/
-│   ├── index.html       ← Single-page app shell
-│   ├── css/style.css    ← Retro CRT arcade styles
-│   └── js/
-│       ├── api.js       ← Fetch wrapper for backend
-│       ├── game.js      ← Canvas game engine (ported from C++/SFML)
-│       └── ui.js        ← Tab routing, leaderboards, profile UI
-└── package.json
+│   ├── index.html         # Main Player Dashboard & Game View
+│   ├── auth.html          # Login / Signup / Password Reset Portal
+│   ├── admin.html         # Administrator Dashboard
+│   ├── css/
+│   │   └── style.css      # Unified stylesheet with CSS Variables and Media Queries
+│   ├── js/
+│   │   ├── api.js         # Fetch wrappers, JWT handling, and Inactivity Monitor
+│   │   ├── auth.js        # Auth UI logic and Strict Form Validation
+│   │   ├── game.js        # Canvas Game Engine Loop, Drawing, Input Handling
+│   │   ├── ui.js          # Player Dashboard logic (Tabs, Store, Leaderboards)
+│   │   ├── admin.js       # Admin UI logic (User Management, Token Requests)
+│   │   └── particles.js   # Live Background Particle System
+│   └── audio.mp3          # Background Track
+└── package.json           # Project dependencies and npm scripts
 ```
 
 ---
 
-## Database Schema
+## 5. Setup & Installation (How to Run)
 
-### `players`
-Stores registered players and their aggregate stats.
-| Column       | Type    | Notes                        |
-|--------------|---------|------------------------------|
-| id           | INTEGER | Primary key                  |
-| username     | TEXT    | Unique, case-insensitive     |
-| created_at   | TEXT    | ISO datetime                 |
-| total_games  | INTEGER |                              |
-| best_score   | INTEGER |                              |
+To run this application locally, ensure you have **Node.js** (v18+) and **MongoDB** installed on your system.
 
-### `scores`
-One row per completed game session.
-| Column        | Type    | Notes                       |
-|---------------|---------|-----------------------------|
-| id            | INTEGER | Primary key                 |
-| player_id     | INTEGER | FK → players.id             |
-| score         | INTEGER |                             |
-| level         | INTEGER | Level reached               |
-| kills         | INTEGER | Centipede segments killed   |
-| mushrooms_hit | INTEGER | Mushrooms destroyed         |
-| duration_sec  | INTEGER | Seconds survived            |
-| played_at     | TEXT    | ISO datetime                |
-
-### `achievements`
-Badge definitions (seeded on init).
-
-### `player_achievements`
-Junction: which player earned which achievement, and when.
-
-### `daily_challenges`
-Tracks per-player score for each calendar day.
-
----
-
-## REST API
-
-| Method | Endpoint                          | Description                   |
-|--------|-----------------------------------|-------------------------------|
-| POST   | `/api/players/register`           | Find-or-create player         |
-| GET    | `/api/players/:username`          | Full profile + achievements   |
-| GET    | `/api/players/:username/history`  | Recent game history           |
-| POST   | `/api/scores`                     | Submit game score             |
-| GET    | `/api/leaderboard`                | All-time best scores          |
-| GET    | `/api/leaderboard/recent`         | Latest game sessions          |
-| GET    | `/api/daily`                      | Today's challenge leaderboard |
-| POST   | `/api/daily`                      | Submit daily challenge score  |
-
----
-
-## Setup & Run
-
+### Step 1: Install Dependencies
+Open your terminal in the root directory of the project and run:
 ```bash
-# 1. Install dependencies
 npm install
+```
 
-# 2. Create the database (run once)
-node db/schema.js
+### Step 2: Start MongoDB
+Ensure that your local MongoDB server is running. The application looks for a local database at `mongodb://127.0.0.1:27017/centipede` by default. 
+*(If you are using MongoDB Atlas, you can inject a connection string via a `MONGODB_URI` environment variable).*
 
-# 3. Start the server
-npm start
-# → http://localhost:3000
-
-# Development (auto-reload)
+### Step 3: Start the Server
+To run the server in development mode (with hot-reloading via Nodemon):
+```bash
 npm run dev
 ```
 
+To run the server in production mode:
+```bash
+npm start
+```
+
+### Step 4: Access the Application
+Open your web browser and navigate to:
+```text
+http://localhost:3000
+```
+*(You can create an Admin account by selecting "Admin" in the dropdown menu on the Signup screen).*
+
 ---
 
-## Controls
-
-| Key | Action  |
-|-----|---------|
-| W   | Move Up |
-| S   | Move Down |
-| A   | Move Left |
-| D   | Move Right |
-| X   | Shoot |
-| P   | Pause / Resume |
-
----
-
-## Game Rules
-
-- Shoot the centipede segments before they reach the player zone.
-- Hitting a segment leaves a mushroom behind and splits the centipede.
-- Mushrooms take 2 hits to destroy (+1 pt first hit, +5 pts on destroy).
-- Each centipede kill = **10 points**.
-- Player has **3 lives**. Touching a centipede costs one life.
-- Clearing all segments advances to the next level (centipede moves faster).
-- Scores are saved to the database and shown on the leaderboard.
+## 6. Future Enhancements
+While the project is feature-complete according to its primary specifications, future development could include:
+*   **SMTP Email Integration:** Swapping out the simulated on-screen Password Reset tokens with a real email dispatcher (like SendGrid or Nodemailer).
+*   **WebSockets:** Implementing Socket.io to make the Admin Dashboard and Leaderboards update in real-time without requiring a page refresh.
+*   **Mobile Touch Controls:** Adding an on-screen D-Pad and Fire button specifically for players accessing the game on touch-screen devices.
