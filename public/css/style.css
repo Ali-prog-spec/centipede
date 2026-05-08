@@ -962,3 +962,5 @@ kbd {
  } 
   
  
+/* Responsive Game Canvas */
+#game-canvas { max-width: 100%; height: auto; aspect-ratio: 1/1; display: block; margin: 0 auto; }
