@@ -66,6 +66,14 @@ const playerSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    resetToken: {
+      type: String,
+      default: null,
+    },
+    resetTokenExpiry: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
