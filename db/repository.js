@@ -1,4 +1,5 @@
 const bcryptjs = require('bcryptjs');
+const crypto = require('crypto');
 const {
   Player,
   Score,
@@ -51,6 +52,33 @@ async function createPlayer(username, password, role = 'player') {
     selectedSkin: 'classic-blaster',
   });
 
+  return serializePlayer(player);
+}
+
+async function createResetToken(username) {
+  const normalizedUsername = username.trim().toLowerCase();
+  const player = await Player.findOne({ username: normalizedUsername });
+  if (!player) throw new Error('Player not found');
+  if (player.isActive === false) throw new Error('Account is deactivated. Please contact an admin.');
+
+  const token = crypto.randomBytes(32).toString('hex');
+  player.resetToken = token;
+  player.resetTokenExpiry = Date.now() + 15 * 60 * 1000; // 15 mins
+  await player.save();
+  return token;
+}
+
+async function resetPassword(token, newPassword) {
+  const player = await Player.findOne({
+    resetToken: token,
+    resetTokenExpiry: { $gt: Date.now() }
+  });
+  if (!player) throw new Error('Invalid or expired reset token');
+
+  player.password = bcryptjs.hashSync(newPassword, 10);
+  player.resetToken = null;
+  player.resetTokenExpiry = null;
+  await player.save();
   return serializePlayer(player);
 }
 
@@ -598,4 +626,6 @@ module.exports = {
   getStoreSkins,
   setPlayerStatus,
   setPlayerRole,
+  createResetToken,
+  resetPassword,
 };
