@@ -383,22 +383,8 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
-async function start() {
-  try {
-    await initDB();
-    app.listen(PORT, () => {
-      console.log(`Centipede Web running at http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error.message);
-    process.exit(1);
-  }
-}
 
-if (require.main === module) {
-  start();
-} else {
-  initDB().catch(console.error);
-}
+initDB().catch(console.error);
 
 module.exports = app;
+
