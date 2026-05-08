@@ -1,0 +1,11 @@
+Changes made for Node 25 compatibility:
+
+- Updated better-sqlite3 from ^9.4.3 to ^12.0.0
+- Added engines field
+
+After extracting:
+
+1. Delete node_modules
+2. Delete package-lock.json
+3. Run:
+   npm install

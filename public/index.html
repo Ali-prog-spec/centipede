@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Centipede Arcade</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="bg-floating-logo">🐛</div>
+  <header class="site-header">
+    <div class="scanlines"></div>
+    <div class="header-inner">
+      <div class="logo-block">
+        <span class="logo-bug">🐛</span>
+        <h1 class="logo-text">CENTIPEDE</h1>
+        <span class="logo-sub">PLAYER DASHBOARD</span>
+      </div>
+      <nav class="nav-tabs">
+        <button class="nav-btn active" data-tab="game">PLAY</button>
+        <button class="nav-btn" data-tab="leaderboard">SCORES</button>
+        <button class="nav-btn" data-tab="profile">PROFILE</button>
+        <button class="nav-btn" data-tab="store">STORE</button>
+        <button class="nav-btn" data-tab="request">REQUEST TOKENS</button>
+        <button class="nav-btn" data-tab="about">ABOUT</button>
+      </nav>
+      <div class="header-user-section">
+        <div id="user-info-header" class="user-info-header hidden">
+          <span id="username-header" class="username-header"></span>
+          <span id="coins-header" class="coins-header">TOKENS <span id="coins-count">0</span></span>
+          <button id="logout-btn" class="logout-btn">LOGOUT</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <section id="tab-game" class="tab-section active">
+      <div class="game-layout">
+        <aside class="game-sidebar left-sidebar">
+          <div class="panel">
+            <h2 class="panel-title">PLAYER</h2>
+            <div id="player-setup">
+              <p class="panel-copy">Use 1 token to launch a run.</p>
+              <div class="token-badge">Available Tokens: <span id="available-tokens">0</span></div>
+              <div class="token-badge">Equipped Skin: <span id="equipped-skin-name">Classic Blaster</span></div>
+              <button id="start-btn" class="retro-btn primary">START GAME</button>
+            </div>
+            <div id="player-hud" class="hidden">
+              <div class="hud-name" id="hud-name">-</div>
+              <div class="hud-stat"><span class="hud-label">SCORE</span><span class="hud-value" id="hud-score">0</span></div>
+              <div class="hud-stat"><span class="hud-label">BEST</span><span class="hud-value" id="hud-best">0</span></div>
+              <div class="hud-stat"><span class="hud-label">LIVES</span><span class="hud-value" id="hud-lives">3</span></div>
+              <div class="hud-stat"><span class="hud-label">LEVEL</span><span class="hud-value" id="hud-level">1</span></div>
+            </div>
+          </div>
+
+          <div class="panel controls-panel">
+            <h2 class="panel-title">CONTROLS</h2>
+            <div class="controls-grid">
+              <kbd>W</kbd><span>Up</span>
+              <kbd>S</kbd><span>Down</span>
+              <kbd>A</kbd><span>Left</span>
+              <kbd>D</kbd><span>Right</span>
+              <kbd>X</kbd><span>Shoot</span>
+              <kbd>P</kbd><span>Pause</span>
+            </div>
+          </div>
+        </aside>
+
+        <div class="canvas-wrapper">
+          <div id="overlay-screen" class="overlay active">
+            <div class="overlay-content">
+              <div class="overlay-bug">🐛</div>
+              <h2 id="overlay-title">CENTIPEDE</h2>
+              <p id="overlay-msg">Press START GAME to spend 1 token and play.</p>
+              <div id="overlay-score-display" class="hidden">
+                <div class="final-score-label">FINAL SCORE</div>
+                <div id="overlay-final-score" class="final-score-value">0</div>
+              </div>
+              <button id="overlay-btn" class="retro-btn primary hidden">PLAY AGAIN</button>
+            </div>
+          </div>
+          <canvas id="game-canvas" width="640" height="640"></canvas>
+          <div class="canvas-border-glow"></div>
+        </div>
+
+        <aside class="game-sidebar right-sidebar">
+          <div class="panel">
+            <h2 class="panel-title">SESSION</h2>
+            <div class="hud-stat"><span class="hud-label">KILLS</span><span class="hud-value" id="stat-kills">0</span></div>
+            <div class="hud-stat"><span class="hud-label">MUSHROOMS</span><span class="hud-value" id="stat-mush">0</span></div>
+            <div class="hud-stat"><span class="hud-label">TIME</span><span class="hud-value" id="stat-time">0:00</span></div>
+          </div>
+          <div class="panel">
+            <h2 class="panel-title">TOP 5</h2>
+            <ol id="mini-leaderboard" class="mini-board">
+              <li class="mini-board-loading">Loading...</li>
+            </ol>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="tab-leaderboard" class="tab-section hidden">
+      <div class="leaderboard-layout">
+        <div class="board-tabs">
+          <button class="board-tab-btn active" data-board="alltime">ALL-TIME</button>
+          <button class="board-tab-btn" data-board="recent">RECENT GAMES</button>
+          <button class="board-tab-btn" data-board="daily">TODAY</button>
+        </div>
+
+        <div id="board-alltime" class="board-content">
+          <table class="retro-table">
+            <thead><tr><th>#</th><th>PLAYER</th><th>BEST SCORE</th><th>GAMES</th></tr></thead>
+            <tbody id="alltime-tbody"><tr><td colspan="4" class="loading-cell">Loading...</td></tr></tbody>
+          </table>
+        </div>
+
+        <div id="board-recent" class="board-content hidden">
+          <table class="retro-table">
+            <thead><tr><th>PLAYER</th><th>SCORE</th><th>KILLS</th><th>TIME</th><th>WHEN</th></tr></thead>
+            <tbody id="recent-tbody"><tr><td colspan="5" class="loading-cell">Loading...</td></tr></tbody>
+          </table>
+        </div>
+
+        <div id="board-daily" class="board-content hidden">
+          <div class="daily-header">
+            <span class="daily-title">DAILY CHALLENGE</span>
+            <span id="daily-date" class="daily-date"></span>
+          </div>
+          <table class="retro-table">
+            <thead><tr><th>#</th><th>PLAYER</th><th>SCORE</th><th>STATUS</th></tr></thead>
+            <tbody id="daily-tbody"><tr><td colspan="4" class="loading-cell">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-profile" class="tab-section hidden">
+      <div class="profile-layout">
+        <div class="profile-search">
+          <input type="text" id="profile-username" class="retro-input wide" placeholder="SEARCH PLAYER" />
+          <button id="profile-search-btn" class="retro-btn">LOOK UP</button>
+        </div>
+        <div id="profile-content" class="hidden">
+          <div class="profile-header-card">
+            <div class="profile-avatar">🐛</div>
+            <div class="profile-info">
+              <div class="profile-name" id="p-name">-</div>
+              <div class="profile-rank" id="p-rank">RANK #-</div>
+              <div class="profile-joined" id="p-joined">-</div>
+            </div>
+          </div>
+
+          <div class="profile-stats-grid">
+            <div class="stat-card"><div class="stat-val" id="ps-best">0</div><div class="stat-lbl">BEST SCORE</div></div>
+            <div class="stat-card"><div class="stat-val" id="ps-games">0</div><div class="stat-lbl">GAMES PLAYED</div></div>
+            <div class="stat-card"><div class="stat-val" id="ps-kills">0</div><div class="stat-lbl">TOTAL KILLS</div></div>
+            <div class="stat-card"><div class="stat-val" id="ps-avg">0</div><div class="stat-lbl">AVG SCORE</div></div>
+          </div>
+
+          <div class="achievements-section">
+            <h3 class="section-title">ACHIEVEMENTS</h3>
+            <div id="achievements-grid" class="ach-grid"></div>
+          </div>
+
+          <div class="history-section">
+            <h3 class="section-title">RECENT GAMES</h3>
+            <table class="retro-table">
+              <thead><tr><th>SCORE</th><th>KILLS</th><th>TIME</th><th>DATE</th></tr></thead>
+              <tbody id="history-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="profile-empty" class="empty-state">Enter a username above to view their profile.</div>
+      </div>
+    </section>
+
+    <section id="tab-store" class="tab-section hidden">
+      <div class="store-layout">
+        <div class="panel store-banner">
+          <h2 class="panel-title">SHOOTER SKIN STORE</h2>
+          <p class="panel-copy">Buy shooter skins with tokens. Already-owned skins can be equipped instantly.</p>
+        </div>
+        <div id="store-grid" class="store-grid"></div>
+      </div>
+    </section>
+
+    <section id="tab-request" class="tab-section hidden">
+      <div class="request-layout">
+        <div class="panel">
+          <h2 class="panel-title">REQUEST TOKENS</h2>
+          <p class="panel-copy">If you run out of tokens, choose an admin and send a request.</p>
+          <div class="request-form-grid">
+            <select id="request-admin" class="retro-input"></select>
+            <input type="number" id="request-amount" class="retro-input" min="1" value="5" placeholder="Tokens needed" />
+            <textarea id="request-message" class="retro-input request-message" placeholder="Optional note to the admin"></textarea>
+            <button id="send-request-btn" class="retro-btn primary">SEND REQUEST</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h2 class="panel-title">MY REQUESTS</h2>
+          <div id="request-history" class="request-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-about" class="tab-section hidden">
+      <div class="about-container" style="max-width: 800px; margin: 40px auto; padding: 0 20px;">
+        <div class="about-panel" style="background: var(--surface-2); border: 2px solid var(--green); border-radius: var(--radius); padding: 40px; box-shadow: 0 0 20px var(--glow-sm);">
+          <h2 class="about-title" style="font-family: var(--font-pixel); color: var(--green); text-shadow: 0 0 10px var(--green); text-align: center; margin-bottom: 30px; font-size: 1.5rem; line-height: 1.4;">DEFEND YOUR GARDEN FROM THE INVASION</h2>
+          <div class="about-content" style="font-family: var(--font-mono); color: var(--text); font-size: 1.1rem; line-height: 1.8;">
+            <p style="margin-bottom: 20px;">
+              Welcome to <strong>Centipede Arcade</strong>! You are the last line of defense in a vibrant, mushroom-filled garden under attack by a relentless, segmented centipede. Armed with your trusty blaster, your objective is to clear the board and survive as long as possible.
+            </p>
+            
+            <h3 style="font-family: var(--font-pixel); color: var(--amber); font-size: 1rem; margin-top: 30px; margin-bottom: 15px;">HOW TO PLAY</h3>
+            <p style="margin-bottom: 20px;">
+              The game is simple but challenging. As you shoot the descending centipede, any segment you hit will turn into a mushroom, splitting the centipede into two independent parts! This means you have to constantly adapt your strategy as the battlefield fills with obstacles.
+            </p>
+
+            <h3 style="font-family: var(--font-pixel); color: var(--amber); font-size: 1rem; margin-top: 30px; margin-bottom: 15px;">DANGERS</h3>
+            <p style="margin-bottom: 20px;">
+              The centipede isn't your only problem. Keep an eye out for rogue spiders that jump across the screen. They move fast and can catch you off guard if you're too focused on the swarm above.
+            </p>
+
+            <h3 style="font-family: var(--font-pixel); color: var(--amber); font-size: 1rem; margin-top: 30px; margin-bottom: 15px;">PROGRESSION</h3>
+            <p style="margin-bottom: 20px;">
+              For every game you play, you can earn tokens, unlock legendary achievements, and climb the global leaderboards. Visit the Store to spend your tokens on exclusive cosmetic skins for your blaster!
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast-container"></div>
+
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <span class="footer-label">&copy; CENTIPEDE ARCADE</span>
+        <span class="footer-text">All Rights Reserved 2026</span>
+      </div>
+      <div class="footer-section">
+        <span class="footer-label">LINKS</span>
+        <a href="#" onclick="document.querySelector('[data-tab=\'about\']').click(); return false;" class="footer-contact">About Game</a>
+      </div>
+      <div class="footer-section">
+        <span class="footer-label">SOCIAL</span>
+        <a href="https://www.instagram.com/cursevuv/" target="_blank" rel="noopener noreferrer" class="footer-contact">Instagram</a>
+      </div>
+      <div class="footer-section">
+        <span class="footer-label">SUPPORT</span>
+        <a href="https://wa.me/923117732344" target="_blank" rel="noopener noreferrer" class="footer-contact">+92 311 7732344</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/particles.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>

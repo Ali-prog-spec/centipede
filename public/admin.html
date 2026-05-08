@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Centipede Admin</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="bg-floating-logo">🐛</div>
+  <header class="site-header">
+    <div class="scanlines"></div>
+    <div class="header-inner">
+      <div class="logo-block">
+        <span class="logo-bug">🛡️</span>
+        <h1 class="logo-text">CENTIPEDE</h1>
+        <span class="logo-sub">ADMIN DASHBOARD</span>
+      </div>
+      <div class="header-user-section">
+        <div id="admin-user-info" class="user-info-header hidden">
+          <span id="admin-name" class="username-header"></span>
+          <button id="admin-logout-btn" class="logout-btn">LOGOUT</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="admin-layout">
+      <section class="panel">
+        <h2 class="panel-title">PLAYER SEARCH</h2>
+        <div class="admin-search-bar">
+          <input id="admin-search" class="retro-input" placeholder="Search players by username" />
+          <button id="admin-search-btn" class="retro-btn">SEARCH</button>
+          <button id="admin-refresh-btn" class="retro-btn">SHOW ALL</button>
+        </div>
+        <div id="admin-players" class="admin-player-list"></div>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">INCOMING TOKEN REQUESTS</h2>
+        <div id="admin-requests" class="request-list"></div>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">PLAYER GAME HISTORY</h2>
+        <div id="history-player-name" class="panel-copy">Select a player to view recent runs.</div>
+        <table class="retro-table">
+          <thead><tr><th>SCORE</th><th>LEVEL</th><th>KILLS</th><th>TIME</th><th>WHEN</th></tr></thead>
+          <tbody id="admin-history-body">
+            <tr><td colspan="5" class="loading-cell">No player selected.</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+
+  <div id="toast-container"></div>
+
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <span class="footer-label">&copy; CENTIPEDE ARCADE</span>
+        <span class="footer-text">All Rights Reserved 2026</span>
+      </div>
+      <div class="footer-section">
+        <span class="footer-label">LINKS</span>
+        <a href="/about.html" class="footer-contact">About Game</a>
+      </div>
+      <div class="footer-section">
+        <span class="footer-label">SOCIAL</span>
+        <a href="https://www.instagram.com/cursevuv/" target="_blank" rel="noopener noreferrer" class="footer-contact">Instagram</a>
+      </div>
+      <div class="footer-section">
+        <span class="footer-label">SUPPORT</span>
+        <a href="https://wa.me/923117732344" target="_blank" rel="noopener noreferrer" class="footer-contact">+92 311 7732344</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/particles.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
