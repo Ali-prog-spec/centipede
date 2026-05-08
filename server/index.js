@@ -395,4 +395,10 @@ async function start() {
   }
 }
 
-start();
+if (require.main === module) {
+  start();
+} else {
+  initDB().catch(console.error);
+}
+
+module.exports = app;
