@@ -55,3 +55,30 @@ const API = (() => {
       request('PATCH', `/admin/players/${playerId}/role`, { role }),
   };
 })();
+
+// Session Expiry on Inactivity (15 minutes)
+(() => {
+  let inactivityTimer;
+  const INACTIVITY_LIMIT_MS = 15 * 60 * 1000;
+
+  function handleLogout() {
+    localStorage.removeItem('centipede-auth-token');
+    localStorage.removeItem('centipede-auth-user');
+    alert('You have been logged out due to inactivity.');
+    window.location.href = '/auth.html';
+  }
+
+  function resetTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(handleLogout, INACTIVITY_LIMIT_MS);
+  }
+
+  ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
+    window.addEventListener(evt, resetTimer, { passive: true });
+  });
+
+  // Only start the timer if the user is actually logged in (has a token)
+  if (localStorage.getItem('centipede-auth-token')) {
+    resetTimer();
+  }
+})();
